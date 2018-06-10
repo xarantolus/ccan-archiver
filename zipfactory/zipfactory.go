@@ -31,13 +31,13 @@ func CreateZipFileFromItems(input chan crawler.CCANItem) error {
 	var l int64 = 0
 	// Loop over channel & Download & Pack
 	for item := range input {
-		if _, contains := downloaded[item.DownloadLink]; contains {
+		if _, contains := downloaded[item.DownloadLink]; item.DownloadLink == "" || contains {
 			println("Already have", item.DownloadLink)
 			continue
 		}
 		// Download
 		name := fmt.Sprintf("%s/%s.%s", item.Author, item.Name, getUrlExtension(item.DownloadLink))
-		println("Downloading", name, "("+strconv.FormatInt(l, 10)+"/3567)")
+		println("Downloading", name, "("+strconv.FormatInt(l, 10)+"/3321)")
 
 		body, err := crawler.DoRequest(item.DownloadLink)
 		if err != nil {
