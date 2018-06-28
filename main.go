@@ -1,23 +1,19 @@
 package main
 
 import (
-	"fmt"
+	"log"
 
 	"./crawler"
+	"./zipfactory"
 )
 
 func main() {
+	// TODO: follow external links
 	var output = make(chan crawler.CCANItem, 25)
 	go crawler.CrawlPage(output)
 
-	var counter int
-	for item := range output {
-		fmt.Printf("%d: %#v\n\n", counter, item)
-		counter++
+	if err := zipfactory.CreateZipFileFromItems(output); err != nil {
+		log.Fatalln(err)
 	}
-
-	// if err := zipfactory.CreateZipFileFromItems(output); err != nil {
-	// 	log.Fatalln(err)
-	// }
 	println("Ende")
 }

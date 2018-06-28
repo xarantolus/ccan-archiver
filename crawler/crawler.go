@@ -14,21 +14,22 @@ import (
 )
 
 const (
-	//url string = "https://ccan.de/cgi-bin/ccan/ccan-view.pl?a=&sc=tm&so=d&nr=3567&pg=%d&ac=ty-ti-ni-tm-ca-dc-ev-vo-si"
-	url         string = "https://ccan.de/cgi-bin/ccan/ccan-view.pl?a=&sc=tm&so=d&nr=3567&ac=ty-ti-ni-tm-ca-dc-ev-vo-si&reveal=1&pg=%d"
-	count              = 3321
-	date_format string = "02.01.06 15:04"
+	url        string = "https://ccan.de/cgi-bin/ccan/ccan-view.pl?a=&sc=tm&so=d&nr=3567&ac=ty-ti-ni-tm-ca-dc-ev-vo-si&reveal=1&pg=%d"
+	count             = 3321
+	dateFormat string = "02.01.06 15:04"
 )
 
 type CCANItem struct {
-	Name          string
-	Date          time.Time
-	DownloadCount int
-	Author        string
-	Votes         int
-	Category      string
-	Engine        string
-	DownloadLink  string
+	Name          string    `json:"name"`
+	Date          time.Time `json:"date"`
+	DownloadCount int       `json:"download_count"`
+	Author        string    `json:"author"`
+	Votes         int       `json:"votes"`
+	Category      string    `json:"category"`
+	Engine        string    `json:"engine"`
+	DownloadLink  string    `json:"download_link"`
+	DirectLink    string    `json:"direct_link"`
+	isExternal    bool      `json:"-"`
 }
 
 func CrawlPage(output chan CCANItem) {
@@ -76,6 +77,9 @@ func CrawlPage(output chan CCANItem) {
 
 					for _, a := range currentNode.FirstChild.Attr {
 						if a.Key == "href" {
+							// Check if it is an external link
+							currentResult.isExternal = strings.HasSuffix(a.Val, "/")
+
 							currLink = "https://ccan.de/cgi-bin/ccan/" + a.Val
 							break
 						}
@@ -176,7 +180,7 @@ func renderNode(n *html.Node) string {
 
 // Parse date format
 func parseDate(input string) (output time.Time, err error) {
-	output, err = time.Parse(date_format, input)
+	output, err = time.Parse(dateFormat, input)
 	return
 }
 
