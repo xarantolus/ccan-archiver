@@ -18,9 +18,9 @@ var (
 	downloaded = make(map[string]bool)
 )
 
+// CreateZipFileFromItems streams the items in input to a zip file called 'result.zip'
 func CreateZipFileFromItems(input chan crawler.CCANItem) error {
 	// Create Zip
-
 	f, err := os.Create("result.zip")
 	if err != nil {
 		return err
@@ -54,11 +54,12 @@ func CreateZipFileFromItems(input chan crawler.CCANItem) error {
 		var resp, err = client.Get(item.DownloadLink)
 		if err != nil {
 			println("Error:", err.Error())
+			continue
 		}
 
 		item.DirectLink = currentDirectURL
 		// Download
-		name := fmt.Sprintf("%s/%s.%s", item.Author, item.Name, getURLExtension(currentDirectURL))
+		name := fmt.Sprintf("%s/%s.%s", cleanFilename(item.Author), cleanFilename(item.Name), cleanFilename(getURLExtension(currentDirectURL)))
 		println("Downloading", name, "("+strconv.FormatInt(l, 10)+"/3321)")
 
 		f, err := w.Create(name)
@@ -116,4 +117,27 @@ func CreateZipFileFromItems(input chan crawler.CCANItem) error {
 func getURLExtension(url string) string {
 	split := strings.Split(url, ".")
 	return split[len(split)-1]
+}
+
+var allowedChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ" + "abcdefghijklmnopqrstuvwxyz" + "0123456789" + " -_.,()[]+" + "ÄÖÜßäöü"
+
+func isAllowedChar(char rune) (contains bool) {
+	for _, r := range allowedChars {
+		if r == char {
+			return true
+		}
+	}
+	return false
+}
+
+func cleanFilename(in string) (out string) {
+	var b = strings.Builder{}
+
+	for _, item := range in {
+		if isAllowedChar(item) {
+			b.WriteRune(item)
+		}
+	}
+
+	return b.String()
 }

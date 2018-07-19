@@ -8,7 +8,6 @@ import (
 )
 
 func main() {
-	// TODO: follow external links
 	var output = make(chan crawler.CCANItem, 25)
 	go crawler.CrawlPage(output)
 
