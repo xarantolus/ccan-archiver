@@ -7,7 +7,6 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 
@@ -60,7 +59,7 @@ func CreateZipFileFromItems(input chan crawler.CCANItem) error {
 		item.DirectLink = currentDirectURL
 		// Download
 		name := fmt.Sprintf("%s/%s.%s", cleanFilename(item.Author), cleanFilename(item.Name), cleanFilename(getURLExtension(currentDirectURL)))
-		println("Downloading", name, "("+strconv.FormatInt(l, 10)+"/3321)")
+		fmt.Printf("Downloading %s (#%d)", name, l)
 
 		f, err := w.Create(name)
 		if err != nil {
