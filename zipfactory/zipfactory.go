@@ -49,6 +49,8 @@ func CreateZipFileFromItems(input chan crawler.CCANItem) error {
 			println("Already have", item.DownloadLink)
 			continue
 		}
+		// Set default value
+		currentDirectURL = item.DownloadLink
 
 		var resp, err = client.Get(item.DownloadLink)
 		if err != nil {
@@ -56,11 +58,16 @@ func CreateZipFileFromItems(input chan crawler.CCANItem) error {
 			continue
 		}
 
-		item.DirectLink = currentDirectURL
-		// Download
-		name := fmt.Sprintf("%s/%s.%s", cleanFilename(item.Author), cleanFilename(item.Name), cleanFilename(getURLExtension(currentDirectURL)))
+		// Check if there was a redirect
+		if currentDirectURL != "" {
+			item.DirectLink = currentDirectURL
+		}
+
+		// Generate name
+		name := fmt.Sprintf("%s/%s.%s", cleanFilename(item.Author), cleanFilename(item.Name), getURLExtension(item.DirectLink))
 		fmt.Printf("Downloading %s (#%d)", name, l)
 
+		// Create in zip file
 		f, err := w.Create(name)
 		if err != nil {
 			println("Error:", err.Error())

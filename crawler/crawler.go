@@ -37,6 +37,19 @@ func CrawlPage(output chan CCANItem) {
 	var totalItemsLoaded int
 	var pageCounter int
 
+	// Add the freeware key for clonk endeavour because it is important
+	output <- CCANItem{
+		Name:          "Freeware",
+		Date:          time.Date(2004, 01, 01, 0, 0, 0, 0, time.Local),
+		DownloadCount: 1,
+		Author:        "Redwolf Design",
+		Votes:         0,
+		Category:      "Key",
+		Engine:        "CE",
+		DownloadLink:  "http://www.clonkx.de/endeavour/Freeware.c4k",
+		isExternal:    true,
+	}
+
 	var errorCount int
 	for {
 		var currentPageItemCount int
@@ -195,19 +208,6 @@ func CrawlPage(output chan CCANItem) {
 		}
 
 		pageCounter++
-	}
-
-	// Add the freeware key for clonk endeavour because it is important
-	output <- CCANItem{
-		Name:          "Freeware Key",
-		Date:          time.Date(2004, 01, 01, 0, 0, 0, 0, time.Local),
-		DownloadCount: 1,
-		Author:        "Redwolf Design",
-		Votes:         0,
-		Category:      "Key",
-		Engine:        "CE",
-		DownloadLink:  "http://www.clonkx.de/endeavour/Freeware.c4k",
-		DirectLink:    "http://www.clonkx.de/endeavour/Freeware.c4k",
 	}
 
 	close(output)
