@@ -5,12 +5,16 @@ The focus of this program is not archiving the entire site, but only downloadabl
 
 The program directly downloads to a zip file called `result.zip`. In this file you can find a `README.md` file that documents the structure.
 
+_Note: The file will be about 5GB in size (last checked 29.07.2018)._
 
 ### Dependencies
 
 This program mainly depends on the go standard library. The only other package needed is `golang.org/x/net/html`.
 You can install it with `go get golang.org/x/net/html` or `go get ./...`.
 
+### Downloading
+
+You can download binaries from the releases section of this repository.
 
 ### Copiling
 
@@ -68,4 +72,4 @@ The metadata file contains the following entry:
 
 ### License
 
-MIT
+MIT, see [LICENSE](LICENSE)
