@@ -34,17 +34,20 @@ func CreateZipFileFromItems(input chan crawler.CCANItem) error {
 
 	// Create http client
 	var client = http.Client{
-		Timeout: 600 * time.Second,
+		Timeout: 600 * time.Second, // long timeout as downloads can be big
 	}
 
+	// If we get redirected, we set the direct url
 	client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
 		currentDirectURL = req.URL.String()
 		return nil
 	}
 
-	var l int64
+	var itemCount int64 = 1
+
 	// Loop over channel & Download & Pack
 	for item := range input {
+		// Check if we already this item or there is no download link
 		if _, contains := downloaded[item.DownloadLink]; item.DownloadLink == "" || contains {
 			println("Already have", item.DownloadLink)
 			continue
@@ -63,56 +66,69 @@ func CreateZipFileFromItems(input chan crawler.CCANItem) error {
 			item.DirectLink = currentDirectURL
 		}
 
-		// Generate name
+		// Generate name and show user
 		name := fmt.Sprintf("%s/%s.%s", cleanFilename(item.Author), cleanFilename(item.Name), getURLExtension(item.DirectLink))
-		fmt.Printf("Downloading %s (#%d)", name, l)
+		fmt.Printf("Downloading %s (#%d)", name, itemCount)
 
 		// Create in zip file
 		f, err := w.Create(name)
 		if err != nil {
-			println("Error:", err.Error())
+			println("Error while creating file:", err.Error())
 			continue
 		}
 
+		// Copy to zip file
 		if _, err = io.Copy(f, resp.Body); err != nil {
-			println("Error:", err.Error())
+			println("Error while downloading:", err.Error())
 			continue
 		}
 
 		if err = w.Flush(); err != nil {
-			println("Error:", err.Error())
+			println("Error while flushing file:", err.Error())
 			continue
 		}
 
 		// Write info json
-
 		infoName := fmt.Sprintf("%s.json", name)
 		result, err := json.MarshalIndent(item, "", "    ")
 		if err != nil {
-			println("Error:", err.Error())
+			println("Error while generating JSON:", err.Error())
 			continue
 		}
 
 		fj, err := w.Create(infoName)
 		if err != nil {
-			println("Error:", err.Error())
+			println("Error while creating JSON file:", err.Error())
 			continue
 		}
 
-		fj.Write(result)
+		_, err = fj.Write(result)
+		if err != nil {
+			println("Error while writing JSON file:", err.Error())
+			continue
+		}
 
 		if err = w.Flush(); err != nil {
-			println("Error:", err.Error())
+			println("Error while flushing JSON file:", err.Error())
 			continue
 		}
 
+		// add the current link to the links we already downloaded
 		downloaded[item.DownloadLink] = true
 
+		// Reset the url so the check above won't generate unexpected results
 		currentDirectURL = ""
 
 		println(" > Success")
-		l++
+		itemCount++
 	}
+
+	// Generate a README.md file
+	rm, err := w.Create("README.md")
+	if err != nil {
+		return err
+	}
+	GenerateReadme(&rm, itemCount)
 
 	if err = w.Flush(); err != nil {
 		return err

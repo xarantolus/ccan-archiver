@@ -16,10 +16,14 @@ import (
 )
 
 const (
-	url        string = "https://ccan.de/cgi-bin/ccan/ccan-view.pl?a=&sc=tm&so=d&nr=250&ac=ty-ti-ni-tm-ca-dc-ev-vo-si&reveal=1&pg=%d"
+	// url is the url to the listing that is embedded on http://ccan.de
+	url string = "https://ccan.de/cgi-bin/ccan/ccan-view.pl?a=&sc=tm&so=d&nr=250&ac=ty-ti-ni-tm-ca-dc-ev-vo-si&reveal=1&pg=%d"
+
+	// dateFormat is the date format used in the listing
 	dateFormat string = "02.01.06 15:04"
 )
 
+// CCANItem is an item from the listing at `url`
 type CCANItem struct {
 	Name          string    `json:"name"`
 	Date          time.Time `json:"date"`
@@ -30,9 +34,9 @@ type CCANItem struct {
 	Engine        string    `json:"engine"`
 	DownloadLink  string    `json:"download_link"`
 	DirectLink    string    `json:"direct_link"`
-	isExternal    bool      `json:"-"`
 }
 
+// CrawlPage crawls the entire listing and returns items in the channel
 func CrawlPage(output chan CCANItem) {
 	var totalItemsLoaded int
 	var pageCounter int
@@ -47,14 +51,13 @@ func CrawlPage(output chan CCANItem) {
 		Category:      "Key",
 		Engine:        "CE",
 		DownloadLink:  "http://www.clonkx.de/endeavour/Freeware.c4k",
-		isExternal:    true,
 	}
 
 	var errorCount int
 	for {
 		var currentPageItemCount int
 
-		fmt.Printf("Fetching %d. page\n", pageCounter)
+		fmt.Printf("Fetching %d. page\n", pageCounter+1)
 		var pageContent, err = DoRequest(fmt.Sprintf(url, pageCounter))
 		if err != nil {
 			errorCount++
@@ -119,9 +122,6 @@ func CrawlPage(output chan CCANItem) {
 
 						for _, a := range currentNode.FirstChild.Attr {
 							if a.Key == "href" {
-								// Check if it is an external link
-								currentResult.isExternal = strings.HasSuffix(a.Val, "/")
-
 								currLink = "https://ccan.de/cgi-bin/ccan/" + a.Val
 								break
 							}
@@ -213,36 +213,37 @@ func CrawlPage(output chan CCANItem) {
 	close(output)
 }
 
+// renderNode renders the text of a html node and ignores errors
 func renderNode(n *html.Node) string {
 	if n == nil {
 		return ""
 	}
 	var buf bytes.Buffer
 	w := io.Writer(&buf)
-	html.Render(w, n)
+	_ = html.Render(w, n)
 	return html.UnescapeString(buf.String())
 }
 
+// renderWithoutTags removes all html tags from the rendered string
 func renderWithoutTags(node *html.Node) string {
 	r := regexp.MustCompile(`<[^>]*>`)
-
 	return r.ReplaceAllString(renderNode(node), "")
 }
 
-// Parse date format
+// parseDate parses the `input` with the assumption that it is formatted as `dateFormat`
+// All dates in the listing are formatted as `dateFormat`
 func parseDate(input string) (output time.Time, err error) {
 	output, err = time.Parse(dateFormat, input)
 	return
 }
 
-// Request helper
-func DoRequest(link string) (io.ReadCloser, error) {
-
+// DoRequest opens the file at the specified url
+func DoRequest(url string) (io.ReadCloser, error) {
 	client := http.Client{
 		Timeout: time.Second * 600,
 	}
 
-	req, err := http.NewRequest(http.MethodGet, link, nil)
+	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
 	}

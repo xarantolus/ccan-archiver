@@ -14,5 +14,5 @@ func main() {
 	if err := zipfactory.CreateZipFileFromItems(output); err != nil {
 		log.Fatalln(err)
 	}
-	println("Ende")
+	println("Finished downloading.")
 }

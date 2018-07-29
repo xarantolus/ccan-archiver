@@ -1,0 +1,43 @@
+# Clonk Archive
+
+This archive contains {{.Count}} clonk mods, engines and games from [ccan.de](https://ccan.de) that were uploaded before {{.DateString}}.
+
+# Mods
+
+The files are in the following schema:
+
+ > `username/name.ext`
+
+ - `username`: username of the user that uploaded the file to CCAN.de
+ - `name.ext`: File to download
+
+There are also metadata files according to this schema:
+
+ > `username/name.ext.json`
+
+Exception: `README.md`
+
+ 
+The file contains the following entry:
+
+```json
+{
+  "name": Display name of the scenario,
+  "date." Upload date,
+  "download_count": Number of downloads,
+  "author": Name of the uploader,
+  "votes": Number of votes,
+  "category": Category_,
+  "engine": Engine for which this file was created_,
+  "download_link": _Downloadlink to ccan.de (Forwarding-Link)_,
+  "direct_link": Direct download link, usually on another server
+}
+```
+
+# Engines
+
+All Engines/Games can be found in the following folder:
+
+ > `Redwolf Design`
+
+The `Freeware.c4k` key available there is for Clonk Endeavour. You need to copy it in the same directory as the installed `clonk.exe`.
