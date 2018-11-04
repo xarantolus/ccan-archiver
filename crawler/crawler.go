@@ -2,7 +2,6 @@ package crawler
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -73,10 +72,10 @@ func CrawlPage(output chan CCANItem) {
 		}
 		defer pageContent.Close()
 
-		var node, ok = html.Parse(pageContent)
-		if ok != nil {
+		node, err := html.Parse(pageContent)
+		if err != nil {
 			errorCount++
-			var err = errors.New("Failed to parse html")
+			var err = fmt.Errorf("Failed to parse html, attempt %d: %s", errorCount, err.Error())
 
 			if errorCount > 5 {
 				log.Fatalln(err)
@@ -224,10 +223,11 @@ func renderNode(n *html.Node) string {
 	return html.UnescapeString(buf.String())
 }
 
+var noTagsRegex = regexp.MustCompile(`<[^>]*>`)
+
 // renderWithoutTags removes all html tags from the rendered string
 func renderWithoutTags(node *html.Node) string {
-	r := regexp.MustCompile(`<[^>]*>`)
-	return r.ReplaceAllString(renderNode(node), "")
+	return noTagsRegex.ReplaceAllString(renderNode(node), "")
 }
 
 // parseDate parses the `input` with the assumption that it is formatted as `dateFormat`
@@ -240,7 +240,7 @@ func parseDate(input string) (output time.Time, err error) {
 // DoRequest opens the file at the specified url
 func DoRequest(url string) (io.ReadCloser, error) {
 	client := http.Client{
-		Timeout: time.Second * 600,
+		Timeout: time.Hour,
 	}
 
 	req, err := http.NewRequest(http.MethodGet, url, nil)
@@ -249,9 +249,9 @@ func DoRequest(url string) (io.ReadCloser, error) {
 	}
 
 	// Do request
-	res, getErr := client.Do(req)
-	if getErr != nil {
-		return nil, getErr
+	res, err := client.Do(req)
+	if err != nil {
+		return nil, err
 	}
 
 	return res.Body, nil

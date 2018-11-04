@@ -59,7 +59,7 @@ The metadata file contains the following entry:
 ```
 {
   "name": Display name of the scenario,
-  "date." Upload date,
+  "date" Upload date,
   "download_count": Number of downloads,
   "author": Name of the uploader,
   "votes": Number of votes,

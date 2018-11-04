@@ -34,7 +34,7 @@ func CreateZipFileFromItems(input chan crawler.CCANItem) error {
 
 	// Create http client
 	var client = http.Client{
-		Timeout: 600 * time.Second, // long timeout as downloads can be big
+		Timeout: 30 * time.Minute, // long timeout as downloads can be big
 	}
 
 	// If we get redirected, we set the direct url
