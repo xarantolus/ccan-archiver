@@ -13,9 +13,24 @@ import (
 	"../crawler"
 )
 
+type createError struct {
+	Error    string           `json:"error_message"`
+	Metadata crawler.CCANItem `json:"ccan_item"`
+}
+
 var (
-	downloaded = make(map[string]bool)
+	downloaded   = make(map[string]bool)
+	failedEntrys = []createError{}
 )
+
+func appendPrintError(what string, err error, item crawler.CCANItem) {
+	errMessage := fmt.Sprintf("%s: %s", what, err.Error())
+	fmt.Printf(" > Error %s", errMessage)
+	failedEntrys = append(failedEntrys, createError{
+		Error:    errMessage,
+		Metadata: item,
+	})
+}
 
 // CreateZipFileFromItems streams the items in input to a zip file called 'result.zip'
 func CreateZipFileFromItems(input chan crawler.CCANItem) error {
@@ -57,7 +72,7 @@ func CreateZipFileFromItems(input chan crawler.CCANItem) error {
 
 		var resp, err = client.Get(item.DownloadLink)
 		if err != nil {
-			println("Error:", err.Error())
+			appendPrintError("while downloading item", err, item)
 			continue
 		}
 
@@ -73,18 +88,18 @@ func CreateZipFileFromItems(input chan crawler.CCANItem) error {
 		// Create in zip file
 		f, err := w.Create(name)
 		if err != nil {
-			println(" > Error while creating file:", err.Error())
+			appendPrintError("while creating file", err, item)
 			continue
 		}
 
 		// Copy to zip file
 		if _, err = io.Copy(f, resp.Body); err != nil {
-			println(" > Error while downloading:", err.Error())
+			appendPrintError("while copying file stream to archive", err, item)
 			continue
 		}
 
 		if err = w.Flush(); err != nil {
-			println(" > Error while flushing file:", err.Error())
+			appendPrintError("while flushing downloaded file", err, item)
 			continue
 		}
 
@@ -92,24 +107,24 @@ func CreateZipFileFromItems(input chan crawler.CCANItem) error {
 		infoName := fmt.Sprintf("%s.json", name)
 		result, err := json.MarshalIndent(item, "", "    ")
 		if err != nil {
-			println(" > Error while generating JSON:", err.Error())
+			appendPrintError("while generating json data", err, item)
 			continue
 		}
 
 		fj, err := w.Create(infoName)
 		if err != nil {
-			println(" > Error while creating JSON file:", err.Error())
+			appendPrintError("while creating json file", err, item)
 			continue
 		}
 
 		_, err = fj.Write(result)
 		if err != nil {
-			println(" > Error while writing JSON file:", err.Error())
+			appendPrintError("while writing json file", err, item)
 			continue
 		}
 
 		if err = w.Flush(); err != nil {
-			println(" > Error while flushing JSON file:", err.Error())
+			appendPrintError("while flushing json file", err, item)
 			continue
 		}
 
@@ -128,12 +143,25 @@ func CreateZipFileFromItems(input chan crawler.CCANItem) error {
 	if err != nil {
 		return err
 	}
-	GenerateReadme(&rm, itemCount)
+	GenerateReadme(rm, itemCount, int64(len(failedEntrys)))
 	println("\nGenerated README.")
+
+	if len(failedEntrys) > 0 {
+		ff, err := w.Create("failed.json")
+		if err != nil {
+			return err
+		}
+		byt, err := json.MarshalIndent(&failedEntrys, "", "    ")
+		if err != nil {
+			return err
+		}
+		ff.Write(byt)
+	}
 
 	if err = w.Flush(); err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -158,7 +186,10 @@ func cleanFilename(in string) (out string) {
 
 	for _, item := range in {
 		if isAllowedChar(item) {
-			b.WriteRune(item)
+			_, err := b.WriteRune(item)
+			if err != nil {
+				panic(err) // This should never happen
+			}
 		}
 	}
 

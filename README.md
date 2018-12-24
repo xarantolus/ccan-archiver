@@ -63,9 +63,9 @@ The metadata file contains the following entry:
   "download_count": Number of downloads,
   "author": Name of the uploader,
   "votes": Number of votes,
-  "category": Category_,
-  "engine": Engine for which this file was created_,
-  "download_link": _Downloadlink to ccan.de (Forwarding-Link)_,
+  "category": Category,
+  "engine": Engine for which this file was created,
+  "download_link": download link to ccan.de (Usually a redirect),
   "direct_link": Direct download link, usually on another server
 }
 ```

@@ -13,12 +13,13 @@ const (
 )
 
 type readmeData struct {
-	Count      int64
-	DateString string
+	Count        int64
+	DateString   string
+	FailedEntrys int64
 }
 
 // GenerateReadme Writes the README file to `w`
-func GenerateReadme(w *io.Writer, itemCount int64) {
+func GenerateReadme(w io.Writer, itemCount, numFailedEntrys int64) {
 	readme, err := readmeMdTmplBytes()
 	if err != nil {
 		panic(err)
@@ -31,9 +32,10 @@ func GenerateReadme(w *io.Writer, itemCount int64) {
 
 	ds := time.Now().Format(readmeOutputDateFormat)
 
-	if err := tmpl.Execute(*w, readmeData{
-		Count:      itemCount,
-		DateString: ds,
+	if err := tmpl.Execute(w, readmeData{
+		Count:        itemCount,
+		DateString:   ds,
+		FailedEntrys: numFailedEntrys,
 	}); err != nil {
 		panic(err)
 	}

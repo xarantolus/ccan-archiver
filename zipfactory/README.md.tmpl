@@ -1,6 +1,6 @@
 # Clonk Archive
 
-This archive contains {{.Count}} clonk mods, engines and games from [ccan.de](https://ccan.de) that were uploaded before {{.DateString}}.
+This archive contains {{.Count}} clonk mods, engines and games from [ccan.de](https://ccan.de) that were uploaded before {{.DateString}}. {{with .FailedEntrys}}There were problems downloading {{.}} Items. You can find their metadata in the `failed.json` file in the archive.{{end}}
 
 # Mods
 
@@ -15,10 +15,9 @@ There are also metadata files according to this schema:
 
  > `username/name.ext.json`
 
-Exception: `README.md`
+Exception: `README.md`{{with .FailedEntrys}} and `failed.json`{{end}}
 
- 
-The file contains the following entry:
+The json file contains the following entry:
 
 ```json
 {
@@ -27,9 +26,9 @@ The file contains the following entry:
   "download_count": Number of downloads,
   "author": Name of the uploader,
   "votes": Number of votes,
-  "category": Category_,
-  "engine": Engine for which this file was created_,
-  "download_link": _Downloadlink to ccan.de (Forwarding-Link)_,
+  "category": Category,
+  "engine": Engine for which this file was created,
+  "download_link": download link to ccan.de (Usually a redirect),
   "direct_link": Direct download link, usually on another server
 }
 ```
@@ -42,4 +41,6 @@ All Engines/Games can be found in the following folder:
 
 The `Freeware.c4k` key available there is for Clonk Endeavour. You need to copy it in the same directory as the installed `clonk.exe`.
 
-The developer mode password for Clonk Endeavour is `Siedlerclonk`.
+The `Freeware Key Clonk Planet DE` and `Freeware Key Clonk Planet US` contains instructions to register Clonk Planet. You might need to rename one of them to `Freeware.txt` and move the file in the program directory of Clonk Planet.
+
+The developer mode password for Clonk Endeavour and Clonk Planet is `Siedlerclonk`.

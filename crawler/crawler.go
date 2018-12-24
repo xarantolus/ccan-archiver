@@ -40,16 +40,9 @@ func CrawlPage(output chan CCANItem) {
 	var totalItemsLoaded int
 	var pageCounter int
 
-	// Add the freeware key for clonk endeavour because it is important
-	output <- CCANItem{
-		Name:          "Freeware",
-		Date:          time.Date(2004, 01, 01, 0, 0, 0, 0, time.Local),
-		DownloadCount: 1,
-		Author:        "Redwolf Design",
-		Votes:         0,
-		Category:      "Key",
-		Engine:        "CE",
-		DownloadLink:  "http://www.clonkx.de/endeavour/Freeware.c4k",
+	// Add items that aren't listed on ccan.de, but might be needed - See items.go
+	for _, nonlistedItem := range additionalItems {
+		output <- nonlistedItem
 	}
 
 	var errorCount int
@@ -70,9 +63,11 @@ func CrawlPage(output chan CCANItem) {
 			time.Sleep(5 * time.Second)
 			continue
 		}
-		defer pageContent.Close()
 
 		node, err := html.Parse(pageContent)
+		// Close content after parsing, but ignore errors
+		_ = pageContent.Close()
+
 		if err != nil {
 			errorCount++
 			var err = fmt.Errorf("Failed to parse html, attempt %d: %s", errorCount, err.Error())
