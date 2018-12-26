@@ -50,7 +50,7 @@ func (c CCANItem) GetName() string {
 }
 
 func (c CCANItem) GetSourceName() string {
-	return "ccan.de"
+	return "CCAN"
 }
 
 // CrawlCCAN crawls the entire listing and returns items in the channel - it will not be closed
@@ -58,7 +58,7 @@ func CrawlCCAN(output chan zipfactory.Archivable) (errorlist []error) {
 	var totalItemsLoaded int
 	var pageCounter int
 
-	// Add items that aren't listed on ccan.de, but might be needed - See items.go
+	// Add items that aren't listed on ccan.de, but might be needed - See items.go (they are part of this crawler as the files will be in the right directory to find them easily)
 	for _, nonlistedItem := range additionalItems {
 		output <- nonlistedItem
 	}
@@ -265,6 +265,10 @@ func DoRequest(url string) (io.ReadCloser, error) {
 	res, err := client.Do(req)
 	if err != nil {
 		return nil, err
+	}
+
+	if res.StatusCode < 200 || res.StatusCode > 399 {
+		return nil, fmt.Errorf("Error in http request: StatusCode is %d", res.StatusCode)
 	}
 
 	return res.Body, nil
