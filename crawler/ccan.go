@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"../zipfactory"
 	"golang.org/x/net/html"
 )
 
@@ -19,7 +20,7 @@ const (
 	url string = "https://ccan.de/cgi-bin/ccan/ccan-view.pl?a=&sc=tm&so=d&nr=250&ac=ty-ti-ni-tm-ca-dc-ev-vo-si&reveal=1&pg=%d"
 
 	// dateFormat is the date format used in the listing
-	dateFormat string = "02.01.06 15:04"
+	ccanDateFormat string = "02.01.06 15:04"
 )
 
 // CCANItem is an item from the listing at `url`
@@ -32,11 +33,28 @@ type CCANItem struct {
 	Category      string    `json:"category"`
 	Engine        string    `json:"engine"`
 	DownloadLink  string    `json:"download_link"`
-	DirectLink    string    `json:"direct_link"`
 }
 
-// CrawlPage crawls the entire listing and returns items in the channel
-func CrawlPage(output chan CCANItem) {
+// Implement zipfactory.Archivable
+
+func (c CCANItem) GetDownloadLink() string {
+	return c.DownloadLink
+}
+
+func (c CCANItem) GetAuthor() string {
+	return c.Author
+}
+
+func (c CCANItem) GetName() string {
+	return c.Name
+}
+
+func (c CCANItem) GetSourceName() string {
+	return "ccan.de"
+}
+
+// CrawlCCAN crawls the entire listing and returns items in the channel - it will not be closed
+func CrawlCCAN(output chan zipfactory.Archivable) (errorlist []error) {
 	var totalItemsLoaded int
 	var pageCounter int
 
@@ -45,7 +63,7 @@ func CrawlPage(output chan CCANItem) {
 		output <- nonlistedItem
 	}
 
-	var errorCount int
+	var errorCount = 0
 	for {
 		var currentPageItemCount int
 
@@ -53,6 +71,7 @@ func CrawlPage(output chan CCANItem) {
 		var pageContent, err = DoRequest(fmt.Sprintf(url, pageCounter))
 		if err != nil {
 			errorCount++
+			errorlist = append(errorlist, fmt.Errorf("Error while downloading listing page %d (try %d/6): %s", pageCounter, errorCount+1, err.Error()))
 
 			if errorCount > 5 {
 				log.Fatalln(err)
@@ -70,7 +89,7 @@ func CrawlPage(output chan CCANItem) {
 
 		if err != nil {
 			errorCount++
-			var err = fmt.Errorf("Failed to parse html, attempt %d: %s", errorCount, err.Error())
+			errorlist = append(errorlist, fmt.Errorf("Failed to parse html, attempt %d: %s", errorCount, err.Error()))
 
 			if errorCount > 5 {
 				log.Fatalln(err)
@@ -169,7 +188,7 @@ func CrawlPage(output chan CCANItem) {
 					}
 				case 9:
 					{
-						date, err := parseDate(strings.Trim(renderNode(currentNode.FirstChild), " "))
+						date, err := parseCCANDate(strings.Trim(renderNode(currentNode.FirstChild), " "))
 						if err != nil {
 							resValid = false
 							break
@@ -203,8 +222,7 @@ func CrawlPage(output chan CCANItem) {
 
 		pageCounter++
 	}
-
-	close(output)
+	return
 }
 
 // renderNode renders the text of a html node and ignores errors
@@ -227,8 +245,8 @@ func renderWithoutTags(node *html.Node) string {
 
 // parseDate parses the `input` with the assumption that it is formatted as `dateFormat`
 // All dates in the listing are formatted as `dateFormat`
-func parseDate(input string) (output time.Time, err error) {
-	output, err = time.Parse(dateFormat, input)
+func parseCCANDate(input string) (output time.Time, err error) {
+	output, err = time.Parse(ccanDateFormat, input)
 	return
 }
 

@@ -7,15 +7,21 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path"
 	"strings"
 	"time"
-
-	"../crawler"
 )
 
+type Archivable interface {
+	GetDownloadLink() string
+	GetAuthor() string
+	GetName() string
+	GetSourceName() string
+}
+
 type createError struct {
-	Error    string           `json:"error_message"`
-	Metadata crawler.CCANItem `json:"ccan_item"`
+	Error    string     `json:"error_message"`
+	Metadata Archivable `json:"item"`
 }
 
 var (
@@ -23,9 +29,9 @@ var (
 	failedEntrys = []createError{}
 )
 
-func appendPrintError(what string, err error, item crawler.CCANItem) {
+func appendPrintError(what string, err error, item Archivable) {
 	errMessage := fmt.Sprintf("%s: %s", what, err.Error())
-	fmt.Printf(" > Error %s", errMessage)
+	fmt.Printf(" > Error %s\n", errMessage)
 	failedEntrys = append(failedEntrys, createError{
 		Error:    errMessage,
 		Metadata: item,
@@ -33,7 +39,7 @@ func appendPrintError(what string, err error, item crawler.CCANItem) {
 }
 
 // CreateZipFileFromItems streams the items in input to a zip file called 'result.zip'
-func CreateZipFileFromItems(input chan crawler.CCANItem) error {
+func CreateZipFileFromItems(input chan Archivable) error {
 	// Create Zip
 	f, err := os.Create("result.zip")
 	if err != nil {
@@ -63,26 +69,21 @@ func CreateZipFileFromItems(input chan crawler.CCANItem) error {
 	// Loop over channel & Download & Pack
 	for item := range input {
 		// Check if we already this item or there is no download link
-		if _, contains := downloaded[item.DownloadLink]; item.DownloadLink == "" || contains {
-			println("Already have", item.DownloadLink)
+		if _, contains := downloaded[item.GetDownloadLink()]; item.GetDownloadLink() == "" || contains {
+			println("Already have", item.GetDownloadLink)
 			continue
 		}
 		// Set default value
-		currentDirectURL = item.DownloadLink
+		currentDirectURL = item.GetDownloadLink()
 
-		var resp, err = client.Get(item.DownloadLink)
+		var resp, err = client.Get(item.GetDownloadLink())
 		if err != nil {
 			appendPrintError("while downloading item", err, item)
 			continue
 		}
 
-		// Check if there was a redirect
-		if currentDirectURL != "" {
-			item.DirectLink = currentDirectURL
-		}
-
 		// Generate name and show user
-		name := fmt.Sprintf("%s/%s.%s", cleanFilename(item.Author), cleanFilename(item.Name), getURLExtension(item.DirectLink))
+		name := fmt.Sprintf("%s/%s/%s.%s", item.GetSourceName(), cleanFilename(item.GetAuthor()), cleanFilename(item.GetName()), getURLExtension(currentDirectURL))
 		fmt.Printf("Downloading %s (#%d)", name, itemCount)
 
 		// Create in zip file
@@ -129,7 +130,7 @@ func CreateZipFileFromItems(input chan crawler.CCANItem) error {
 		}
 
 		// add the current link to the links we already downloaded
-		downloaded[item.DownloadLink] = true
+		downloaded[item.GetDownloadLink()] = true
 
 		// Reset the url so the check above won't generate unexpected results
 		currentDirectURL = ""
@@ -166,8 +167,11 @@ func CreateZipFileFromItems(input chan crawler.CCANItem) error {
 }
 
 func getURLExtension(url string) string {
-	split := strings.Split(url, ".")
-	return split[len(split)-1]
+	ext := path.Ext(url)
+	if len(ext) == 0 {
+		return ""
+	}
+	return ext[1:]
 }
 
 var allowedChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ" + "abcdefghijklmnopqrstuvwxyz" + "0123456789" + " -_.,()[]+" + "ÄÖÜßäöü"
