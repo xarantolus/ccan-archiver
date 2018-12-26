@@ -1,46 +1,66 @@
 # Clonk Archive
 
-This archive contains {{.Count}} clonk mods, engines and games from [ccan.de](https://ccan.de) that were uploaded before {{.DateString}}. {{with .FailedEntrys}}There were problems downloading {{.}} Items. You can find their metadata in the `failed.json` file in the archive.{{end}}
+This archive contains {{.Count}} clonk mods, engines and games from [ccan.de](https://ccan.de) and the [Clonk-Center Archive](https://cc-archive.lwrl.de) that were uploaded before {{.DateString}}. {{with .FailedEntrys}}There were problems downloading {{.}} Items. You can find their metadata in the `failed.json` file in the archive.{{end}}
 
 # Mods
 
 The files are in the following schema:
 
- > `username/name.ext`
+ > `site/username/name.ext`
 
+ - `site`: The site name where the item was hosted. This is either "CCAN" or "Clonk-Center"
  - `username`: username of the user that uploaded the file to CCAN.de
  - `name.ext`: File to download
 
 There are also metadata files according to this schema:
 
- > `username/name.ext.json`
+ > `site/username/name.ext.json`
 
 Exception: `README.md`{{with .FailedEntrys}} and `failed.json`{{end}}
 
-The json file contains the following entry:
+
+#### Metadata
+
+The json file for all "CCAN" items contains the following entry:
 
 ```json
 {
-  "name": Display name of the scenario,
+  "name": Display name of the object,
   "date" Upload date,
   "download_count": Number of downloads,
   "author": Name of the uploader,
   "votes": Number of votes,
   "category": Category,
   "engine": Engine for which this file was created,
-  "download_link": download link to ccan.de (Usually a redirect),
-  "direct_link": Direct download link, usually on another server
+  "download_link": download link to ccan.de (Usually a redirect)
+}
+```
+
+The json file for all "Clonk-Center" items contains the following entry:
+
+```json
+{
+  "name": Display name of the object,
+  "date" Upload date,
+  "download_count": Number of downloads,
+  "author": Name of the uploader,
+  "engine": Engine for which this file was created,
+  "download_link": download link to cc-archive.lwrl.de,
+  "description": The description that can be found at the page for this item (as Markdown text)
 }
 ```
 
 # Engines
 
-All Engines/Games can be found in the following folder:
+All Engines/Games can be found in the following folders:
 
- > `Redwolf Design`
+ > `CCAN/Redwolf Design`
+ > `Clonk-Center/Redwolf Design`
 
-The `Freeware.c4k` key available there is for Clonk Endeavour. You need to copy it in the same directory as the installed `clonk.exe`.
+# Keys & Passwords
 
-The `Freeware Key Clonk Planet DE` and `Freeware Key Clonk Planet US` contains instructions to register Clonk Planet. You might need to rename one of them to `Freeware.txt` and move the file in the program directory of Clonk Planet.
+The `Freeware.c4k` key available at `CCAN/Redwolf Design` is for Clonk Endeavour. You need to copy it in the same directory as the installed `clonk.exe`.
 
-The developer mode password for Clonk Endeavour and Clonk Planet is `Siedlerclonk`.
+The `Freeware Key Clonk Planet DE` and `Freeware Key Clonk Planet US` files in the same folder contain instructions to register Clonk Planet.
+
+The developer mode password for both Clonk Endeavour and Clonk Planet is `Siedlerclonk`.

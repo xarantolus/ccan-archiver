@@ -70,7 +70,7 @@ func CreateZipFileFromItems(input chan Archivable) error {
 	for item := range input {
 		// Check if we already this item or there is no download link
 		if _, contains := downloaded[item.GetDownloadLink()]; item.GetDownloadLink() == "" || contains {
-			println("Already have", item.GetDownloadLink)
+			println("Already have", item.GetDownloadLink())
 			continue
 		}
 		// Set default value

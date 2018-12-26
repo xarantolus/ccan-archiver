@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
@@ -14,7 +15,7 @@ import (
 
 const (
 	urlTemplate         = "https://cc-archive.lwrl.de/download.php?act=getinfo&dl=%d"
-	ccDateFormat string = "01.02.2006 15:04:05" // e.g. 30.06.2004 21:02
+	ccDateFormat string = "02.01.2006 15:04:05" // e.g. 30.06.2004 21:02
 
 	maxItemID = 643 // The newest item has the id 643, and there don't seem to be more after it (404 for all above it)
 )
@@ -98,7 +99,15 @@ func GetClonkCenterItem(id int) (result CCItem, err error) {
 		}
 
 		key := s.Children().First().Text()
-		value := s.Children().Eq(1)
+
+		vChild := s.Children()
+		if vChild == nil {
+			return
+		}
+		value := vChild.Eq(1)
+		if value == nil {
+			return
+		}
 
 		switch key {
 		case "Datum":
@@ -134,7 +143,13 @@ func GetClonkCenterItem(id int) (result CCItem, err error) {
 			}
 		case "Beschreibung":
 			htmlString, err := value.Html()
-			if err == nil {
+			if err == nil && strings.TrimSpace(htmlString) != "" {
+				defer func() {
+					// Sometimes whitefriday decides to panic. If this happens, we use the default html string
+					if r := recover(); r != nil {
+						result.Description = htmlString
+					}
+				}()
 				// Convert this html to markdown
 				result.Description = whitefriday.Convert(htmlString)
 			}

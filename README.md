@@ -1,11 +1,11 @@
 # ccan-archiver
 
-`ccan-archiver` is a command-line program to archive the content of [ccan.de](https://ccan.de).
-The focus of this program is not archiving the entire site, but only downloadable items (excluding comments, the forum etc.) and some metadata.
+`ccan-archiver` is a command-line program to archive the content of [ccan.de](https://ccan.de) and the [Clonk-Center Archive](https://cc-archive.lwrl.de).
+The focus of this program is not archiving entire sites, but only downloadable items (excluding comments, the forum etc.) and some metadata.
 
 The program directly downloads to a zip file called `result.zip`. In this file you can find a `README.md` file that documents the structure.
 
-_Note: The file will be about 5GB in size (last checked 29.07.2018)._
+_Note: The file will be about 6.5GB in size (last checked 25.12.2018)._
 
 ### Dependencies
 
@@ -37,38 +37,52 @@ go build
 
 This is a brief documentation of the content of the resulting file called `result.zip`, you can find more in the file `README.md` in the archive.
 
-The files in it are in the following schema:
-```
-username/name.ext
-```
+The files are in the following schema:
 
+ > `site/username/name.ext`
+
+ - `site`: The site name where the item was hosted. This is either "CCAN" or "Clonk-Center"
  - `username`: username of the user that uploaded the file to CCAN.de
  - `name.ext`: File to download
 
 There are also metadata files according to this schema:
 
-```
-username/name.ext.json
-```
+ > `site/username/name.ext.json`
 
-Exception: `README.md`
+Exception: `README.md` and `failed.json` (this file only exists if a download failed, you can find all metadata there)
 
 
-The metadata file contains the following entry:
+#### Metadata
 
-```
+The json file for all "CCAN" items contains the following entry:
+
+```json
 {
-  "name": Display name of the scenario,
+  "name": Display name of the object,
   "date" Upload date,
   "download_count": Number of downloads,
   "author": Name of the uploader,
   "votes": Number of votes,
   "category": Category,
   "engine": Engine for which this file was created,
-  "download_link": download link to ccan.de (Usually a redirect),
-  "direct_link": Direct download link, usually on another server
+  "download_link": download link to ccan.de (Usually a redirect)
 }
 ```
+
+The json file for all "Clonk-Center" items contains the following entry:
+
+```json
+{
+  "name": Display name of the object,
+  "date" Upload date,
+  "download_count": Number of downloads,
+  "author": Name of the uploader,
+  "engine": Engine for which this file was created,
+  "download_link": download link to cc-archive.lwrl.de,
+  "description": The description that can be found at the page for this item (as Markdown text)
+}
+```
+Read more in the `README.md` at the root of your archive after it has been downloaded.
 
 ### License
 
