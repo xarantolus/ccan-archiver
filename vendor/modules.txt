@@ -1,0 +1,9 @@
+# github.com/PuerkitoBio/goquery v1.5.0
+github.com/PuerkitoBio/goquery
+# github.com/andybalholm/cascadia v1.0.0
+github.com/andybalholm/cascadia
+# github.com/iorlas/whitefriday v0.0.0-20170216131615-0d890f726eed
+github.com/iorlas/whitefriday
+# golang.org/x/net v0.0.0-20191028085509-fe3aa8a45271
+golang.org/x/net/html
+golang.org/x/net/html/atom

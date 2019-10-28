@@ -10,7 +10,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/iorlas/whitefriday"
 
-	"../zipfactory"
+	"github.com/xarantolus/ccan-archiver/zipfactory"
 )
 
 const (

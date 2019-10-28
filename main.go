@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"log"
 
-	"./crawler"
-	"./zipfactory"
+	"github.com/xarantolus/ccan-archiver/crawler"
+	"github.com/xarantolus/ccan-archiver/zipfactory"
 )
 
 func main() {

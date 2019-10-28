@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"../zipfactory"
+	"github.com/xarantolus/ccan-archiver/zipfactory"
 	"golang.org/x/net/html"
 )
 
