@@ -38,10 +38,14 @@ func appendPrintError(what string, err error, item Archivable) {
 	})
 }
 
+func formatFilename() string {
+	return time.Now().Format("CCAN-Clonk-Center-Archiv-2006-01-02.zip")
+}
+
 // CreateZipFileFromItems streams the items in input to a zip file called 'result.zip'
 func CreateZipFileFromItems(input chan Archivable) error {
 	// Create Zip
-	f, err := os.Create("result.zip")
+	f, err := os.Create(formatFilename())
 	if err != nil {
 		return err
 	}
