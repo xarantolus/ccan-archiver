@@ -59,7 +59,7 @@ The json file for all "CCAN" items contains the following entry:
 ```yaml
 {
   "name": Display name of the object,
-  "date" Upload date,
+  "date": Upload date,
   "download_count": Number of downloads,
   "author": Name of the uploader,
   "votes": Number of votes,
@@ -74,7 +74,7 @@ The json file for all "Clonk-Center" items contains the following entry:
 ```yaml
 {
   "name": Display name of the object,
-  "date" Upload date,
+  "date": Upload date,
   "download_count": Number of downloads,
   "author": Name of the uploader,
   "engine": Engine for which this file was created,
