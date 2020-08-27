@@ -56,7 +56,7 @@ Exception: `README.md` and `failed.json` (this file only exists if a download fa
 
 The json file for all "CCAN" items contains the following entry:
 
-```json
+```yaml
 {
   "name": Display name of the object,
   "date" Upload date,
@@ -71,7 +71,7 @@ The json file for all "CCAN" items contains the following entry:
 
 The json file for all "Clonk-Center" items contains the following entry:
 
-```json
+```yaml
 {
   "name": Display name of the object,
   "date" Upload date,
